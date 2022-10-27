@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit Form View to Modify it -->
+        <record id="rental_order_form_flujo" model="ir.ui.view">
+            <field name="name">rental.order.form.flujo</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//notebook/page[@name='order_lines']/field/tree" position="inside">
+                    <button name="action_show_flujo" title="Flujo futuro" type="object" icon="fa-list" width="0.1"
+                            options="{&quot;warn&quot;: true}"
+                            attrs="{'column_invisible': [('parent.is_rental_order', '=', False)],
+                'invisible': ['|', ('is_rental', '=', False), ('is_product_rentable', '=', False)]
+            }"/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='order_lines']/field/tree/field[@name='product_id']"
+                       position="after">
+                    <field name="lot_recogida_id"/>
+                    <button name="open_cambio" title="Cambio Serial" type="object" icon="fa-spinner"
+                            width="0.1"
+                            options="{&quot;warn&quot;: true}"
+                            attrs="{'invisible': ['|', ('is_rental', '=', False), '|', ('is_product_rentable', '=', False), '|',('lot_recogida_id', '=', False), ('qty_returned','&gt;',0)]
+            }"/>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='order_lines']/field/tree/field[@name='price_unit']"
+                       position="before">
+                    <field name="price_month" attrs="{'column_invisible': [('parent.is_rental_order', '=', False)],
+                'invisible': ['|', ('is_rental', '=', False), ('is_product_rentable', '=', False)]
+            }" optional="show"/>
+                    <field name="months_rental" attrs="{'column_invisible': [('parent.is_rental_order', '=', False)],
+                'invisible': ['|', ('is_rental', '=', False), ('is_product_rentable', '=', False)]
+            }" optional="hide" readonly="1" force_save="1"/>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='order_lines']/field/tree/field[@name='qty_invoiced']"
+                       position="attributes">
+                    <attribute name="digits">[42,6]</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name="recurrent_date_invoice"
+                           attrs="{'readonly': [('state', 'not in', ['draft', 'send'])], 'invisible':[('invoice_pickup', '=', True)]}"/>
+                    <field name="invoice_pickup" attrs="{'readonly': [('state', 'not in', ['draft', 'send'])]}"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="account_move_qty_inherit" model="ir.ui.view">
+            <field name="name">account.move.qty.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//notebook/page[@id='invoice_tab']/field/tree/field[@name='quantity']"
+                       position="attributes">
+                    <attribute name="digits">[42,6]</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+
+        <record id="view_flujo_futuro" model="ir.ui.view">
+            <field name="name">stock.move.operations.form</field>
+            <field name="model">sale.order.line</field>
+            <field name="priority">1000</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="product_id" readonly="1"/>
+                            <field name="product_uom_qty" readonly="1"/>
+                            <field name="qty_delivered" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pickup_date" readonly="1"/>
+                            <field name="return_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <group class="text-center" attrs="{'invisible': [('qty_delivered', '!=', 0)]}">
+                        <div class="card text-white bg-warning">
+                            <div class="card-header bg-transparent">
+                                <span class="fa fa-warning" t-translation="off">&amp;nbsp;</span>
+                                <span>
+                                    Este flujo futuro no es definitivo, faltan algunos productos por se entregados.
+                                </span>
+                            </div>
+                        </div>
+                    </group>
+                    <field name="future_flow_line_ids" mode="tree" readonly="1" create="false" edit="false">
+                        <tree string="Flujo futuro">
+                            <!--<field name="sequence" readonly="1" nolabel="1"/>-->
+                            <field name="product_id" readonly="1"/>
+                            <field name="invoice_date_ini" readonly="1"/>
+                            <field name="invoice_date_fin" readonly="1"/>
+                            <field name="invoice_date" readonly="1"/>
+                            <field name="amount_payment" readonly="1"/>
+                            <field name="percent_invoice" readonly="1"/>
+                        </tree>
+                    </field>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="wizard_rental_inherit" model="ir.ui.view">
+            <field name="name">rental.wizard.inherit</field>
+            <field name="model">rental.wizard</field>
+            <field name="inherit_id" ref="sale_renting.rental_configurator_view_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='pricing_explanation']" position="after">
+                    <field name="amount_month"/>
+                </xpath>
+                <xpath expr="//group[@name='rental_specs']" position="inside">
+                    <field name="months"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="rental_order_wizard_form_inherit" model="ir.ui.view">
+            <field name="name">rental.order.wizard.form.inherit</field>
+            <field name="model">rental.order.wizard</field>
+            <field name="inherit_id" ref="sale_renting.rental_order_wizard_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='rental_wizard_line_ids']" position="after">
+                    <label for="file_import" style="font-weight: 600;font-size: 13px;"
+                           attrs="{'invisible':[('status', 'in', ['return','cambio'])]}"
+                           class="oe_form_label oe_inline o_form_label oe_align_right o_align_right"/>
+                    <span class="oe_inline">
+                        <field name='file_name' class="oe_inline" invisible='1'/>
+                        <field name='file_import' style="margin-left:10px" class="oe_inline" filename='file_name'
+                               attrs="{'invisible':[('status', 'in', ['return','cambio'])]}"/>
+                        <!--<button class='btn btn-primary oe_inline'
+                                attrs="{'invisible': ['|',('file_import', '=',False), ('status', '=', 'return')]}"
+                                name='cargar_archivo' type='object' string='Cargar numeros de serie'/>-->
+                    </span>
+                </xpath>
+                <xpath expr="//tree/field['qty_returned']" position="after">
+                    <field name="pickup_date" attrs="{'column_invisible':[('parent.status', 'in', ['return','cambio'])]}"
+                           force_save="1"/>
+                    <field name="return_date" attrs="{'column_invisible':[('parent.status', 'in', ['pickup','cambio'])]}"
+                           force_save="1"/>
+                    <field name="fecha_cambio" attrs="{'column_invisible':[('parent.status', '!=', 'cambio')]}"
+                           force_save="1"/>
+
+                    <field name="serial_anterior" options="{'no_open': True, 'no_create': True}" attrs="{'column_invisible': [('parent.status', '!=', 'cambio')], 'readonly':True}"/>
+                    <field name="nuevo_serial" attrs="{'column_invisible': [('parent.status', '!=', 'cambio')]}"/>
+
+                </xpath>
+                <xpath expr="//field[@name='qty_reserved']" position="attributes">
+                    <attribute name="attrs">{'column_invisible':[('parent.status', 'in', ['return','cambio'])]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='pickedup_lot_ids']" position="attributes">
+                    <attribute name="attrs">{ 'column_invisible': ['|', ('parent.status', 'in', ['return','cambio']),
+                        ('parent.has_tracked_lines', '=', False)],
+                        'invisible':[('tracking', '!=', 'serial')], }</attribute>
+                </xpath>
+                <xpath expr="//field[@name='qty_delivered']" position="attributes">
+                    <attribute name="attrs">{'readonly':[('parent.status', '=', 'return')],
+                        'column_invisible': [('parent.status', '=', 'cambio')]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='qty_returned']" position="attributes">
+                    <attribute name="attrs">{'column_invisible':[('parent.status', 'in', ['pickup','cambio'])]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='returned_lot_ids']" position="attributes">
+                    <attribute name="attrs">{'column_invisible':['|', ('parent.status', 'in', ['pickup','cambio']),
+                        ('parent.has_tracked_lines', '=', False)], 'invisible':[('tracking', '!=', 'serial')],}</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

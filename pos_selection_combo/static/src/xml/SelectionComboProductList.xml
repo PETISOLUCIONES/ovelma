@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="SelectionComboProductList" owl="1">
+        <div class="product-list-container">
+            <div t-if="props.products.length != 0">
+                <t t-foreach="props.products" t-as="product" t-key="product.id">
+                    <SelectionComboProductItem product="product"/>
+                </t>
+            </div>
+            <div t-else="">
+                <div class="product-list-empty">
+                    <p>There are no products in this category.</p>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

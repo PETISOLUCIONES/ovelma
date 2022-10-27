@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_topping" model="ir.ui.view">
+        <field name="name">product.template.topping.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <field name="is_selection_combo"/>
+                    <label for="is_selection_combo"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="point_of_sale_product_template_form_view_topping" model="ir.ui.view">
+        <field name="name">product.template.topping.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="point_of_sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='pos']" position="inside">
+                <group attrs="{'invisible':[('is_selection_combo','=',False)]}">
+                    <group name="pos_selection_combo" string="Selection Combo">
+                        <field name="include_price"/>
+                    </group>
+                    <field name="product_topping_ids" nolabel="1">
+                        <tree editable="bottom" string="Taxes">
+                            <field name="product_categ_id"/>
+                            <field name="include_all"/>
+                            <field name="description"/>
+                            <field name="product_ids" widget="many2many_tags"/>
+                            <field name="multi_selection"/>
+                            <field name="no_of_min_items" attrs="{'readonly':[('multi_selection','=',False)]}"/>
+                            <field name="no_of_items" attrs="{'readonly':[('multi_selection','=',False)]}"/>
+                        </tree>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

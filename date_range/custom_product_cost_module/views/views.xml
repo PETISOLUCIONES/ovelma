@@ -1,0 +1,18 @@
+<odoo>
+    <data><!-- actions opening views on models -->
+        <!-- <record model="ir.ui.view" id="product_product_form_view">
+            <field name="name">product.product.cost.inherited</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form//field[@name='purchase_ok']" position="after">
+
+
+                    <button name="copy_value" string="copy" type="object">
+
+                    </button>
+                </xpath>
+            </field>
+        </record> -->
+    </data>
+</odoo>

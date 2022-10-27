@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="rental_order_view_tree" model="ir.ui.view">
+            <field name="name">rental.order.tree</field>
+            <field name="model">future.flow.line</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="sale_order"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="lot_id"/>
+                    <field name="invoice_date_ini"/>
+                    <field name="invoice_date_fin"/>
+                    <field name="invoice_date"/>
+                    <field name="amount_payment"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_flujo_futuro_search" model="ir.ui.view">
+            <field name="name">view.flujo.futuro.search</field>
+            <field name="model">future.flow.line</field>
+            <field name="arch" type="xml">
+                <search string="flujo futuro">
+                    <field name="product_id"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="action_flujo_futuro_report" model="ir.actions.act_window">
+            <field name="name">Flujo Futuro</field>
+            <field name="res_model">future.flow.line</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id"></field>  <!-- force empty -->
+            <field name="search_view_id" ref="view_flujo_futuro_search"/>
+            <field name="context">{'group_by_no_leaf':0, 'search_default_sale_order':1, 'group_by':['partner_id',
+                'sale_order', 'product_id'], 'order_by':['invoice_date']}
+            </field>
+            <field name="domain">[('sale_rental_schedule_id.order_id.state', '!=', 'cancel')]</field>
+        </record>
+
+        <record id="rental_order_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="rental_order_view_tree"/>
+            <field name="act_window_id" ref="action_flujo_futuro_report"/>
+        </record>
+
+        <menuitem id="sale_renting.menu_rental_reporting" name="Reporting" parent="sale_renting.rental_menu_root"
+                  sequence="5" groups="sales_team.group_sale_manager"/>
+        <menuitem id="menu_rental_reporting_odoo" name="Informe" parent="sale_renting.menu_rental_reporting"
+                  sequence="1" groups="sales_team.group_sale_manager" action="sale_renting.action_rental_report"/>
+        <menuitem id="menu_rental_flujos_futuros" name="Flujos Futuros" parent="sale_renting.menu_rental_reporting"
+                  sequence="2" groups="sales_team.group_sale_manager"
+                  action="alquiler_flujo_futuro.action_flujo_futuro_report"/>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+
+
+        <record id="payment_icon_wompicol" model="payment.icon">
+            <field name="name">Wompicol</field>
+            <field name="image" type="base64" file="payment_wompicol/static/src/img/wompicol_icon.png"/>
+        </record>
+
+        <record id="payment_icon_pse_ach" model="payment.icon">
+            <field name="name">PSE</field>
+            <field name="image" type="base64" file="payment_wompicol/static/src/img/pse.png"/>
+        </record>
+
+        <record id="payment_acquirer_wompicol" model="payment.acquirer">
+            <field name="name">Wompi Colombia (Bancolombia)</field>
+            <field name="image_128" type="base64" file="payment_wompicol/static/src/img/wompicol_icon.png"/>
+            <field name="provider">wompicol</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="redirect_form_view_id" ref="redirect_form"/>
+            <field name="state">test</field>
+            <field name="wompicol_public_key">public_key</field>
+            <field name="wompicol_private_key">private_key</field>
+            <field name="wompicol_test_public_key">test_public_key</field>
+            <field name="wompicol_test_private_key">test_private_key</field>
+            <field name="description" type="html">
+                <p>
+                    A payment gateway to accept online payments via credit cards, debit cards, bank transfers, Nequi, and others, only available in Colombia, Provided by Bancolombia
+                </p>
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><i class="fa fa-check"/>Online Payment</li>
+                        <li class="list-inline-item"><i class="fa fa-check"/>Payment Status Tracking</li>
+                    </ul>
+            </field>
+            <field name="payment_icon_ids" eval='[(6, 0, [
+                ref("payment_icon_wompicol"),
+                ref("payment_icon_pse_ach"),
+                ref("payment.payment_icon_cc_visa"),
+                ref("payment.payment_icon_cc_mastercard"),
+                ref("payment.payment_icon_cc_maestro"),
+                ref("payment.payment_icon_cc_american_express"),
+                ref("payment.payment_icon_cc_diners_club_intl")
+                ])]'/>
+        </record>
+
+        <record id="account_payment_method_wompicol" model="account.payment.method">
+            <field name="name">wompicol</field>
+            <field name="code">wompicol</field>
+            <field name="payment_type">inbound</field>
+        </record>
+
+</odoo>

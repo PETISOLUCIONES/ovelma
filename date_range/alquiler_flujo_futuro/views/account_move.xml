@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+       <!-- Inherit Form View to Modify it -->
+       <record id="account_move_form_sponsor" model="ir.ui.view">
+           <field name="name">account.move.form.sponsor</field>
+           <field name="model">account.move</field>
+           <field name="inherit_id" ref="account.view_move_form"/>
+           <field name="arch" type="xml">
+               <xpath expr="//field[@name='ref']" position="before">
+                    <field name="sponsor_id" readonly="1"/>
+                </xpath>
+           </field>
+       </record>
+
+        <record id="account_move_tree_sponsor" model="ir.ui.view">
+            <field name="name">account.move.tree.sponsor</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_invoice_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='invoice_date']" position="before">
+                    <field name="sponsor_id" />
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>

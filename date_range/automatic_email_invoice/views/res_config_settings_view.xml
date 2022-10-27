@@ -1,0 +1,23 @@
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='account_vendor_bills']" position="inside">
+                <div class="col-xs-12 col-md-6 o_setting_box" id="sin_orden_compra">
+                    <div class="o_setting_left_pane">
+                        <field name="sin_orden_compra" widget="upgrade_boolean"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="sin_orden_compra"/>
+                        <div class="text-muted">
+                            El sistema leera el correo y no tendrá en cuenta una orden de compra relacionada, solo
+                            creara la
+                            factura y generará el acuse automatico
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

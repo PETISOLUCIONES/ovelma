@@ -1,0 +1,70 @@
+<odoo>
+  <data>
+
+
+      <record id="account_payment_financial_discount" model="ir.ui.view">
+          <field name="name">account.payment.financial.discount</field>
+            <field name="model">account.payment.register</field>
+            <field name="inherit_id" ref="account.view_account_payment_register_form"/>
+            <field name="arch" type="xml">
+                <field name="payment_date" position="before">
+                    <label for="financial_discount" />
+                    <div class="my-2" >
+                        <field name="financial_discount" class="oe_inline mr-2"   />
+                     <button name="apply_discount" type="object"
+                             string="Aplicar descuento"
+                             class="oe_inline oe_highlight"
+                             attrs="{'invisible':[('financial_discount', '=', 0)]}"/>
+                    </div>
+                </field>
+            </field>
+      </record>
+
+
+
+      <record id="action_factura_descuento_finaciero" model="ir.actions.act_window">
+            <field name="name">Descuento Financiero Proveedores</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('financial_discount','&gt;',0), ('move_type', '=', 'in_invoice')]</field>
+        </record>
+
+      <record id="action_factura_descuento_finaciero_customers" model="ir.actions.act_window">
+            <field name="name">Descuento Financiero Clientes</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('financial_discount','&gt;',0), ('move_type', '=', 'out_invoice')]</field>
+        </record>
+
+
+        <menuitem id="action_menuitem_descuento_financiero_customers"
+                  parent="account.menu_finance_receivables"
+                  action="action_factura_descuento_finaciero_customers"
+                  name="Facturas con descuentos financieros"
+                  sequence="2"/>
+
+
+       <menuitem id="action_menuitem_descuento_financiero"
+                  parent="account.menu_finance_payables"
+                  action="action_factura_descuento_finaciero"
+                  name="Facturas con descuentos financieros"
+                  sequence="2"/>
+
+
+      <record id="view_tree_financial_discount" model="ir.ui.view">
+          <field name="name">view.tree.financial.discount</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_invoice_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="before">
+                    <field name="financial_discount" readonly="True" sum="Total"  optional="show" />
+                    <field name="date_financial_discount" optional="show"/>
+                    <field name="porc_financial_discount" optional="show"/>
+                </field>
+            </field>
+      </record>
+
+  </data>
+</odoo>

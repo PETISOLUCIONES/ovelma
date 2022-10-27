@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<odoo>
+    <data noupdate="1">
+      <record id="equipment_insurance_management_reminder" model="mail.template">
+          <field name="name">equipment_insurance_management_reminder</field>
+          <!-- <field name="email_from">${object.company_id.email}</field>
+          <field name="subject">Insurance Policy ${object.name} Expiry Reminder </field> -->
+          <field name="email_from">{{object.company_id.email}}</field>
+          <field name="subject">Póliza de seguros {{object.name}} Recordatorio de caducidad </field>
+          <field name="model_id" ref="equipment_insurance_management.model_maintenance_equipment_insurance"/>
+          <!-- <field name="email_to" >${object.partner_id.email}</field> -->
+          <field name="email_to" >{{object.partner_id.email}}</field>
+          <field name="auto_delete" eval="True"/>
+          <field name="body_html"><![CDATA[
+                Hola <!-- ${object.partner_id.name} -->
+                <t t-out="object.partner_id.name"/>,
+                <ul>Su póliza <!-- ${object.name} --><t t-out="object.name"/> va a caducar el: <!-- ${object.end_date.strftime("%d-%m-%Y")} -->
+                <t t-out="object.end_date.strftime('%d-%m-%Y')"/>
+                <br/>
+          Gracias,
+                <br/>
+              <!-- <div style="width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;">
+          <h3 style="margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;">
+              <strong style="text-transform:uppercase;">${object.company_id.name}</strong></h3>
+      </div>
+      <div style="width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;">
+          <span style="color: #222; margin-bottom: 5px; display: block; ">
+              ${object.company_id.partner_id.sudo().with_context(show_address=True, html_format=True).name_get()[0][1] | safe}
+          </span>
+          % if object.company_id.phone:
+              <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                  Teléfono:; ${object.company_id.phone}
+              </div>
+          % endif
+          % if object.company_id.website:
+              <div>
+                  Web :;<a href="${object.company_id.website}">${object.company_id.website}</a>
+              </div>
+          %endif
+          <p></p>--></ul> 
+  ]]>
+          </field>
+      </record>
+    </data>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- view wizard -->
+        <record id="wizard_import_xml" model="ir.ui.view">
+            <field name="name">wizard.import.xml</field>
+            <field name="model">import.xml</field>
+            <field name="arch" type="xml">
+                <form string="Message">
+                    <field name="arc" string="Subir archivo xml" filename="nomArc"/>
+                    <field name="nomArc" invisible="1"/>
+                    <footer>
+                        <button string="Importar" type="object" class="btn-primary" name="cargar_archivo" />
+                        <button string="Cancel" type="object" class="o_cancel" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- accion -->
+        <record id="action_import_fac_xml_view" model="ir.actions.act_window">
+            <field name="name">Import electronic invoice</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">import.xml</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!-- menu -->
+        <menuitem name="Importar factura xml"
+                  id="import_fac_xml"
+                  parent="account.menu_finance_payables"
+                  action="import_fac_electronica.action_import_fac_xml_view"
+                  sequence="300"/>
+    </data>
+</odoo>

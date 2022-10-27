@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve"> 
+
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//ul[hasclass('info-list')]/t[1]" position="after">
+            <t t-if="props.line.get_product().is_selection_combo">
+               <i style="color: green; font-size:13px;">
+                    <t t-foreach="props.line.order_menu" t-as="order_menu" t-key="order_menu.id"> 
+                        <div style="color: red;">&#8226;  <t t-esc="order_menu.categoryName"/></div>
+                        <t t-foreach="order_menu.products" t-as="product" t-key="product.id"> 
+                            <div style="margin-left: 15px;">&#187;<t t-esc="product.product_name"/> :- <t t-esc="product.qty * props.line.quantity"/> </div>
+                        </t>
+                    </t>
+               </i>
+            </t>
+        </xpath>
+    </t>
+
+</templates>

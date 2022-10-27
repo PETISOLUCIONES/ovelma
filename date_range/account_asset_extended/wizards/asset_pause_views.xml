@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_asset_pause_asset_type" model="ir.ui.view">
+        <field name="name">account.asset.pause.asset.type</field>
+        <field name="model">account.asset.pause</field>
+        <field name="inherit_id" ref="account_asset.asset_pause_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="asset_pause_type" required="True"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

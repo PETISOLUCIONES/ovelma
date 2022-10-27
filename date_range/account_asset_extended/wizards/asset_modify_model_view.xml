@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="wizard_account_asset_modify_model_form">
+        <field name="name">wizard.account.asset.modify.model.form</field>
+        <field name="model">account.asset.modify.model</field>
+        <field name="arch" type="xml">
+            <form string="Cambio de Modelo">
+                <field name="asset_id" invisible="1"/>
+                <group>
+                    <group string="Modificación">
+                        <field name="date" readonly="False" force_save="True"/>
+                        <field name="actual_niff_model_id"/>
+                        <field name="actual_fiscal_model_id"/>
+                        <field name="company_id" invisible="True"/>
+                    </group>
+                    <group string="Nuevo Modelo">
+                        <field name="model_modification_type" required="True"/>
+                        <field name="new_model_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_change_model" string="Cambiar Modelo" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

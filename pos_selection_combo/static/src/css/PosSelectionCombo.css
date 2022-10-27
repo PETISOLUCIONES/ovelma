@@ -1,0 +1,155 @@
+.product_extra {
+    background: red;
+    position: absolute;
+    top: 69px;
+    vertical-align: top;
+    color: white;
+    line-height: 13px;
+    padding: 2px 5px;
+    border-radius: 2px;
+    opacity: 0.6;
+    width: 100%;
+}
+
+.green_border {
+    border-color: green !important;
+}
+
+.remove-item {
+    position: absolute;
+    display: none;
+    top: 2px;
+    left: 2px;
+    vertical-align: top;
+    color: white;
+    line-height: 13px;
+    background: #7f82ac;
+    padding: 2px 5px;
+    border-radius: 2px
+}
+
+.green_border .remove-item {
+    display: block;
+}
+
+.pos .popup.popup-selection .selection-height {
+    max-height: 75% !important;
+    line-height: 20px !important; 
+}
+
+.col-1 {
+    flex: 0 0 8.33333333%;
+    max-width: 8.33333333%;
+}
+
+.col-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+.col-9 {
+    flex: 0 0 75%;
+    max-width: 75%;
+}
+
+.col-md-1 {
+    float: left;
+    width: 8.33333333%;
+}
+
+.col-md-3 {
+    float: left;
+    width: 25%;
+}
+
+.col-md-9 {
+    float: left;
+    width: 75%;
+}
+
+.order-menu {
+    background: white;
+    min-height: 350px;
+    max-height: 350px;
+    font-size: 12px;
+    overflow: scroll;
+}
+.order-total {
+    background: white;
+    font-size: 20px;
+    border: 1px solid #6ec89b;
+    padding: 25px 10px;
+    line-height: 5px;
+    float:right;
+}
+
+.topp_product_list {
+    text-align: justify;
+}
+
+.total-price {
+    color: red;
+}
+
+.order_menu_row .category {
+    float: left;
+    padding: 5px;
+    clear: both;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.order_menu_row .order_item {
+    margin-left: 8%;
+    clear: both;
+    padding-bottom: 16px;
+}
+
+.order_menu_row .product_name {
+    float:left;
+    width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.order_menu_row .product_price {
+    float:right;
+    margin-right: 8px;
+}
+
+.pos_receipt_order_menu {
+    margin: 2px;
+}
+
+.pos_receipt_order_menu div {
+    font-size: 14px;
+}
+
+.pos_receipt_order_menu_row {
+    padding: 2px 5px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.pos_receipt_order_menu_row .order_menu_item_qty {
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.pos_receipt_order_menu_row .order_menu_item_name {
+    font-style: italic;
+    font-size: 11px;
+}
+
+.product_selection_combo .product-list-container {
+    max-height: 400px;
+}
+
+.product_selection_combo .category-simple-button {
+    line-height: 32px;
+    height: 32px;
+}

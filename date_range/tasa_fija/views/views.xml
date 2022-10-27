@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="view_local_currency_form" model="ir.ui.view">
+            <field name="name">Custom Rate Currency Form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <field name="partner_currency_id" position="after">
+                    <field name="tasa_fija" attrs="{'invisible': [('partner_currency_id','=',False)]}"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</odoo>

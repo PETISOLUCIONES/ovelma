@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="post_deferred_revenue_wizard_form">
+        <field name="name">post.deferred.revenue.wizard.form</field>
+        <field name="model">post.deferred.revenue</field>
+        <field name="arch" type="xml">
+            <form string="Values">
+                <field name="asset_id" invisible="1"/>
+                <group string="Configuration">
+                    <group >
+                        <field name="unpublished_entries" readonly="1"/>
+                        <field name="method_number" required="1"/>
+                    </group>
+                    <group >
+                        <field name="date" readonly="True"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="post" string="Post" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

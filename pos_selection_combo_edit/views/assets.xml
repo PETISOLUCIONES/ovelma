@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pos_selection_combo_edit_assets" inherit_id="point_of_sale.assets">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/pos_selection_combo_edit/static/src/js/OrderWidget.js"></script>
+            <script type="text/javascript" src="/pos_selection_combo_edit/static/src/js/PosSelectionComboEdit.js"></script>
+        </xpath>
+    </template>
+</odoo>

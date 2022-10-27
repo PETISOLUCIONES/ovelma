@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_asset_sell_inherited" model="ir.ui.view">
+        <field name="name">account.asset.sell.inherited</field>
+        <field name="model">account.asset.sell</field>
+        <field name="inherit_id" ref="account_asset.asset_sell_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='action']" position="after">
+                <field name="date"/>
+            </xpath>
+            <xpath expr="//field[@name='loss_account_id']" position="after">
+                <field name="gain_account_niif_id"/>
+                <field name="loss_account_niif_id"/>
+            </xpath>
+            <xpath expr="//field[@name='gain_account_id']" position="attributes">
+                <attribute name="attrs">{'required': [('gain_or_loss', '=', 'gain')]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='loss_account_id']" position="attributes">
+                <attribute name="attrs">{'required': [('gain_or_loss', '=', 'loss')]}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

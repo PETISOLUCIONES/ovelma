@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- <report 
+            id="action_report_insurance"
+            string="Insurance"
+            model="maintenance.equipment.insurance" 
+            report_type="qweb-pdf"
+            file="equipment_insurance_management.insurance_print_report_id" 
+            name="equipment_insurance_management.insurance_print_report_id"
+        /> -->
+
+        <record id="action_report_insurance" model="ir.actions.report">
+            <field name="name">Seguro</field>
+            <field name="model">maintenance.equipment.insurance</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">equipment_insurance_management.insurance_print_report_id</field>
+            <field name="report_file">equipment_insurance_management.insurance_print_report_id</field>
+            <field name="binding_model_id" ref="model_maintenance_equipment_insurance"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="insurance_print_report_id">
+            <t t-foreach="docs" t-as="doc">
+              <t t-call="web.external_layout">
+                  <t t-call="web.html_container">
+                      <div class="page">
+                          <div class="row col-12">
+                              <div class="col-6">
+                              <h3>
+                                  <strong><span t-field="doc.name"/></strong>
+                              </h3>
+                          </div>
+                          <div class="col-6 text-right">
+                            <strong>Insurance Start: </strong>
+                            <span t-field="doc.start_date"/><br/>
+                            <strong>Insurance End: </strong>
+                            <span t-field="doc.end_date"/>
+                          </div>
+
+                      </div>
+                      </div><br/>
+                      <table class="table">
+                          <tr style= "border-bottom:hidden;">
+                            <td><strong>Numero de seguro:</strong></td><td><span t-field="doc.policy_no"/></td>
+                             
+                            <td><strong>Titular del seguro: </strong></td><td><address t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/></td>
+                          </tr>
+                          <tr style="border-bottom:hidden;" >                                  
+                            <!--<td><strong>Equipment: </strong></td><td><span t-field="doc.equipment_id" /><br/></td>-->
+                            <!--<td><strong>Activo: </strong></td><td><span t-field="doc.asset_id" /><br/></td>-->
+                            <td></td><td></td>
+                            <td><strong>Compañía de seguros:</strong> </td><td><address t-field="doc.policy_company_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/></td>
+                          </tr>
+                          <tr style="border-bottom:hidden;">
+                            <td><strong>Fecha de emisión del seguro: </strong></td><td><span t-field="doc.policy_taken" /><br/></td>
+                            <td><strong>Persona de contacto: </strong></td><td><span t-field="doc.contact_person"/></td>
+                          </tr>
+                          <tr style="border-bottom:hidden;">
+                            <td><strong>Monto del seguro: </strong></td><td>
+                            <span
+                                  t-field="doc.amount"
+                                  t-options='{"widget": "monetary", "display_currency": doc.currency_id}'
+                              /><br/></td>
+
+                            
+                            <td><strong>Teléfono: </strong></td><td><span t-field="doc.phone" /><br/></td>
+                         
+                          </tr>
+                          <tr style="border-bottom:hidden;">
+                            <td></td><td></td>
+                            <td><strong>Email: </strong></td><td><span t-field="doc.email" /><br/></td>
+                          </tr>
+                      </table>
+
+                      <br/>
+                      <table class="table table-bordered">
+                          <tr>
+                              <th>Activos</th>
+                          </tr>
+                          <t t-foreach="doc.asset_ids" t-as="asset">
+                              <tr>
+                                  <td><span t-field="asset.name" /></td>
+                              </tr>
+                          </t>
+                      </table>
+
+                      <br/>
+                      <table class="table table-bordered">
+                          <tr>
+                              <th>Propiedad del seguro</th>
+                              <th>Valor</th>
+                          </tr>
+                          <t t-foreach="doc.property_line_ids" t-as="policy">
+                              <tr>
+                                  <td><span t-field="policy.property_id" /></td>
+                                  <td><span t-field="policy.value" /></td>
+                              </tr>
+                          </t>
+                      </table>
+                        <!-- </div> -->
+                    </t>
+                </t>
+               </t>
+        </template>
+    </data>
+</odoo>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

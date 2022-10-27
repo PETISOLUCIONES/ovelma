@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sales_stock_report_sales_stock_report_wizard,sales_stock_report.sales_stock_reportwizard,model_stock_report_wizard,,1,1,1,1
+access_sales_stock_report_sales_stock_report,sales_stock_report.sales_stock_report,model_sale_stock_report,,1,1,1,1

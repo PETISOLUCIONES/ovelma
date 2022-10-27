@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="pos_backend_receipt" model="report.paperformat">
+				<field name="name">Pos Backend Receipt</field>
+				<field name="default" eval="True" />
+				<field name="format">A6</field>
+				<field name="page_height">0</field>
+				<field name="page_width">0</field>
+				<field name="orientation">Portrait</field>
+				<field name="margin_top">5</field>
+				<field name="margin_bottom">5</field>
+				<field name="margin_left">3</field>
+				<field name="margin_right">3</field>
+				<field name="header_line" eval="False"/>
+				<field name="header_spacing">2</field>
+	</record>	
+
+	<record id="pos_receipt_backend_pos" model="ir.actions.report">
+            <field name="name">POS Receipt</field>
+            <field name="model">pos.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">bi_pos_backend_workflow.receipt_backend</field>
+            <field name="report_file">bi_pos_backend_workflow.receipt_backend</field>
+            <field name="paperformat_id" ref="bi_pos_backend_workflow.pos_backend_receipt" />
+    </record>	
+
+</odoo>

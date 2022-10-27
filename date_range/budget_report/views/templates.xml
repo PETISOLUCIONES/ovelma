@@ -1,0 +1,169 @@
+<odoo>
+    <data>
+        <!--<template id="new_style_assets" name="new style assets" inherit_id="web.assets_frontend">
+            <xpath expr="." position="inside">
+                <link rel="stylesheet"  href="/budget_report/static/scss/main.scss" />
+                <script type="text/javascript" src="/budget_report/static/js/main.js" />
+            </xpath>
+        </template>-->
+
+        <template id="budget_report_template" name="Budget Report Template">
+            <t t-call-assets="web.assets_common"/>
+            <t t-call-assets="web.assets_frontend"/>
+
+            <div class="mr-5 ml-5 mt-3">
+                <div class="d-flex mb-2">
+                    <div class="w-100" id="product-badgebox">
+                    </div>
+                    <div class="w-100" id="criteria-badgebox">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex" style="width: 90%;">
+                        <div id="product" class="mr-3 w-100">
+                            <div class="form-group">
+                                <label for="product-input"><b>Product Filter</b></label>
+                                <select class="form-control" id="product-input" onchange="inputSelect('product')">
+                                    <option selected="selected">Select a product...</option>
+                                    <t t-foreach="unique_product_filter_list" t-as="unique_product">
+                                        <option t-att-value="unique_product[1]">
+                                            <t t-esc="unique_product[0]" />
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="criteria" class="mr-3 w-100">
+                            <div class="form-group">
+                                <label for="criteria-input"><b>Criteria Filter</b></label>
+                                <select class="form-control" id="criteria-input" onchange="inputSelect('criteria')">
+                                    <option selected="selected">Select a criteria...</option>
+                                    <t t-foreach="unique_criteria_filter_list" t-as="unique_criteria">
+                                        <option t-att-value="unique_criteria">
+                                            <t t-esc="unique_criteria" />
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="sortby" class="w-50">
+                            <div class="form-group">
+                                <label for="sortby-input"><b>Sort By</b></label>
+                                <select class="form-control" id="sortby-input" onchange="sortSelect('sortby')">
+                                    <option selected="selected">Sortby...</option>
+                                    <option value="criteria_asc">Criteria Up</option>
+                                    <option value="criteria_desc">Criteria Down</option>
+                                    <option value="product_asc">Product Up</option>
+                                    <option value="product_desc">Product Down</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 28px;">
+                        <a href="/budget-report/" id="apply" class="btn btn-primary pl-4 pr-4">Apply</a>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <form class="w-50 mr-5 d-flex justify-content-between" method="POST" action="/budget-report-company-set/">
+                        <div class="d-flex w-100">
+                             <div class="form-group w-100 mr-3">
+                                <label for="company_input"><b>Company Filter</b></label>
+                                <select class="form-control" name="company_input" id="company_input">
+                                    <t t-foreach="request.env['res.company'].sudo().search([])" t-as="company">
+                                        <t t-if="request.session.get('company_filter') == company.name">
+                                            <option t-att-value="company.name" selected="selected"><t t-esc="company.name" /></option>
+                                        </t>
+                                        <t t-else="">
+                                            <option t-att-value="company.name" ><t t-esc="company.name" /></option>
+                                        </t>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="padding-top: 28px;">
+                            <button type="submit" class="btn btn-primary pl-4 pr-4">Apply</button>
+                        </div>
+                    </form>
+
+                    <form onsubmit="return valueSubmit()" class="w-50 mr-5 d-flex justify-content-between" method="POST" action="/budget-report-value-set/">
+                        <div class="d-flex w-100">
+                            <div class="form-group w-100 mr-3">
+                                <label for="month_input"><b>Month</b></label>
+                                <select class="form-control" name="month_input" id="month_input" onchange="valueSet()">
+                                    <option selected="selected">Select a month...</option>
+                                    <t t-foreach="['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']" t-as="month">
+                                        <option t-att-value="month" ><t t-esc="month" /></option>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="form-group w-100 mr-3">
+                                <label for="month_value"><b>Value</b></label>
+                                <input type="number" name="month_value" class="form-control" id="month_value" onchange="valueSet()" />
+                            </div>
+                        </div>
+
+                        <input type="hidden" id="params" name="params" value="" />
+
+                        <div style="padding-top: 28px;">
+                            <button type="submit" class="btn btn-primary pl-4 pr-4">Apply</button>
+                        </div>
+                    </form>
+
+                    <div style="padding-top: 28px;">
+                        <a href="/budget-report/" class="btn btn-primary pl-4 pr-4">Reset</a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">No.</th>
+                                <th scope="col">Product</th>
+                                <th scope="col">Criteria</th>
+                                <th scope="col">Jan</th>
+                                <th scope="col">Feb</th>
+                                <th scope="col">Mar</th>
+                                <th scope="col">Apr</th>
+                                <th scope="col">May</th>
+                                <th scope="col">Jun</th>
+                                <th scope="col">Jul</th>
+                                <th scope="col">Aug</th>
+                                <th scope="col">Sep</th>
+                                <th scope="col">Oct</th>
+                                <th scope="col">Nov</th>
+                                <th scope="col">Dec</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="index" t-value="0" />
+                            <t t-foreach="budget_report_object" t-as="budget_report_record">
+                                <t t-set="index" t-value="index + 1" />
+                                <tr>
+                                    <th scope="row"><t t-esc="index" /></th>
+                                    <td><t t-esc="budget_report_record.product" /></td>
+                                    <td><t t-esc="budget_report_record.criteria" /></td>
+                                    <td><t t-esc="budget_report_record.january" /></td>
+                                    <td><t t-esc="budget_report_record.february" /></td>
+                                    <td><t t-esc="budget_report_record.march" /></td>
+                                    <td><t t-esc="budget_report_record.april" /></td>
+                                    <td><t t-esc="budget_report_record.may" /></td>
+                                    <td><t t-esc="budget_report_record.june" /></td>
+                                    <td><t t-esc="budget_report_record.july" /></td>
+                                    <td><t t-esc="budget_report_record.august" /></td>
+                                    <td><t t-esc="budget_report_record.september" /></td>
+                                    <td><t t-esc="budget_report_record.october" /></td>
+                                    <td><t t-esc="budget_report_record.november" /></td>
+                                    <td><t t-esc="budget_report_record.december" /></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+<odoo>
+    <data>
+        <record id="pos_order_sync_inherit_view_pos_config_form" model="ir.ui.view">
+            <field name="name">pos.config.form.view</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.pos_config_view_form" />
+            <field name="arch" type="xml">
+                <xpath expr="////div[@class='row mt16 o_settings_container'][3]" position="after">
+                    <h2>POS Order Sync</h2>
+                    <div class="row mt16 o_settings_container" id="wk_pos_wallet">
+                        <div class="col-xs-12 col-md-6 o_setting_box" title="Select between the option to print quotation as browser based Pdf Reprot or Xml Receipt(POSBOX)">
+                            <div class="o_setting_right_pane">
+                                <label for="quotation_print_type" string="Quotation Print Type"/>
+                                <div class="text-muted">
+                                    Select between the option to print quotation as browser based Pdf Reprot or Xml Receipt(POSBOX)
+                                </div>
+                                <div class="content-group mt16">
+                                    <field name="quotation_print_type"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+  </data>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pos_ice_cream_assets" inherit_id="point_of_sale.assets">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/pos_selection_combo/static/src/js/SelectionComboProductItem.js"></script>
+            <script type="text/javascript" src="/pos_selection_combo/static/src/js/SelectionComboProductList.js"></script>
+            <script type="text/javascript" src="/pos_selection_combo/static/src/js/SelectionComboOrderMenuList.js"></script>
+            <script type="text/javascript" src="/pos_selection_combo/static/src/js/ProductSelectionPopup.js"></script>
+            <script type="text/javascript" src="/pos_selection_combo/static/src/js/PosSelectionCombo.js"></script>
+        </xpath>
+        <xpath expr="//link[@id='pos-stylesheet']" position="after">
+            <link rel="stylesheet" href="/pos_selection_combo/static/src/css/PosSelectionCombo.css" type="text/css"/>
+        </xpath>
+    </template>
+</odoo>

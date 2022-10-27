@@ -1,0 +1,50 @@
+<odoo>
+    <template id="report_invoice_document_inherit_sale" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//th[@name='th_quantity']" position="after">
+            <t t-if="doc.is_rental_order">
+                <th name="th_price_month" class="text-right">Precio Mensual</th>
+            </t>
+        </xpath>
+        <xpath expr="//td[@name='td_quantity']" position="after">
+            <t t-if="doc.is_rental_order">
+                <td name="td_price_month" class="text-right">
+                    <span t-field="line.price_month"/>
+                </td>
+            </t>
+        </xpath>
+        <xpath expr="//div[@class='page']" position="inside">
+
+                <h2 class="mt16">
+                    <span>PLAN DE FACTURAS</span>
+                </h2>
+                <table class="table table-sm o_main_table">
+                    <!-- In case we want to repeat the header, remove "display: table-row-group" -->
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th name="th_entrega" class="text-left">Entrega</th>
+                            <th name="th_fecha_plan" class="text-right">Fecha del Plan</th>
+                            <th name="th_amount_payment" class="text-right">Valor a pagar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+                        <t t-foreach="doc.invoice_plan_ids" t-as="plan_line">
+                            <tr t-att-class="'font-italic o_line_note'">
+                                    <td name="td_entrega" >
+                                        <span t-field="plan_line.installment"/>
+                                    </td>
+                                    <td name="td_fecha_plan" class="text-right">
+                                        <span t-field="plan_line.plan_date"/>
+                                    </td>
+                                    <td name="td_amount_payment" class="text-right o_price_total">
+                                        <span t-esc="'$%.2f' % (plan_line.percent)"/>
+                                    </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+        </xpath>
+    </template>
+
+
+</odoo>

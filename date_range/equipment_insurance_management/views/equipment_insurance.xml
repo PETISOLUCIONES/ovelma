@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_equipment_insurance_form_view" model="ir.ui.view">
+            <field name="name">Insurance Form View</field>
+            <field name="model">maintenance.equipment.insurance</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button string="Renovar seguro ahora" name="%(action_wiz_insurance_create_policy_renew)d"
+                                type="action" class="oe_highlight" attrs="{'invisible': [('state', 'not in', ['to_expired','expired'])]}"/>
+                        <!--<button string="Confirmar" class="oe_highlight" name="action_confirm" type="object" states="draft"/>-->
+
+                        <button string="En curso" class="oe_highlight" name="action_progress" type="object" states="draft"/>
+
+                        <button string="Cancelar" name="action_cancel" states="draft" type="object" />
+                        <button string="Reporte Seguro" name="%(action_wiz_insurance_report)d"  type="action" />
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,to_expired,expired,close"/>
+                    </header>
+                    <sheet>
+                        <!--<div class="oe_button_box" name="button_box">
+                                <button class="oe_inline oe_stat_button" type="object" name="action_button_equipment"
+                                icon="fa-pencil-square-o" string="Equipos" >
+                                </button>
+                        </div>-->
+                        <div class="oe_title">
+                            <label for="name" class="oe_edit_only"/>
+                            <h1><field name="name" string="Name" placeholder="Nombre" attrs="{'readonly': [('state', '!=', 'draft')]}"/></h1>
+                        </div>
+
+                            <group>
+                            <group>
+                              <!--   <field name="partner_id" widget="res_partner_many2one" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}"/> -->
+                                <field name="partner_id" widget="res_partner_many2one"  context="{ 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='policy_no' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                <field name='policy_taken' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='start_date' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='end_date'
+                                attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <!--<field name='equipment_id' attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}"/>-->
+                                <!--<field name='asset_id' attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}"/>-->
+                                <!--<field name='asset_ids' attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}"/>-->
+
+                                <field name='amount' widget="monetary" readonly="True"/>
+
+                                <field name="currency_id" options="{'no_create': True}" groups="base.group_multi_currency" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                            </group>
+                            <group>
+                                <!-- <field name='policy_company_id' widget="res_partner_many2one" domain="[('customer','=',True)]" context="{'search_default_customer':1, 'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}"/> -->
+                                <field name='policy_company_id' widget="res_partner_many2one" domain="[('es_aseguradora','=',True)]" context="{'show_address': 1, 'show_vat': True}" options='{"always_reload": True}' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='contact_person' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='phone' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='email' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+
+                                <field name='parent_id'/>
+
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Activos" name="assets">
+                                <!--<field name="asset_ids" widget="many2many" attrs="{'readonly': [('state', '!=', 'draft'),('state', '!=', 'confirm')]}">
+                                    <tree string="Activos">
+                                        <field name="display_name" string="Nombre del activo" />
+                                    </tree>
+                                </field>-->
+
+                                <field name="equipment_ids" widget="section_and_note_one2many"
+                                mode="tree,kanban" attrs="{'readonly': [('state', 'in', ['expired', 'cancel', 'close'])]}">
+                                    <tree string="Activos" editable="bottom">
+                                        <field name="asset_id" string="Nombre del activo" />
+                                        <field name="prima" widget="monetary" />
+                                        <field name="porcentaje_iva"  />
+                                        <field name="iva" widget="monetary" />
+                                        <field name="fecha_entrega"  />
+                                        <field name="city_id"  />
+                                        <field name="fecha_inicio"  />
+                                        <field name="fecha_fin"  />
+                                        <field name="plan"  />
+                                    </tree>
+                                </field>
+
+                            </page>
+                            <page string="Detalles del seguro" name="property">
+                                <group>
+                                    <field name="property_line_ids" nolabel="1"/>
+                                </group>
+                                <group string="Notas Internas">
+                                    <field name="internal_notes" placeholder="Internal notes....." nolabel="1"/>
+                                 </group>
+                            </page>
+                            <page name="novedades" string="Novedades">
+                                <field name="siniestros_ids" widget="section_and_note_one2many"
+                                mode="tree,kanban" attrs="{'readonly': [('state', 'in', ['expired', 'cancel', 'close'])]}">
+                                    <tree string="Novedades" editable="bottom">
+                                        <field name="asset_id" string="Activo" />
+                                        <field name="fecha_siniestro"  />
+                                        <field name="activos_seguro_ids" invisible="1" />
+                                        <field name="novedad_id"  />
+                                        <field name="city_id"  />
+                                        <field name="tipo_siniestro"  />
+                                        <field name="note"  />
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Otra información" name="other_info">
+                                <group>
+                                    <group>
+                                        <field name="company_id" groups="base.group_multi_company" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                       
+                                        <field name='responsible_user_id' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    </group>
+                                    <group>
+                                        <field name="create_date" readonly="1"/>
+                                         <field name='user_id' attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                        
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_equipment_insurance_tree_view" model="ir.ui.view">
+            <field name="name">Insurance Tree View</field>
+            <field name="model">maintenance.equipment.insurance</field>
+            <field name="arch" type="xml">
+                <tree>
+                   <field name='name'/>
+                   <field name="policy_no"/>
+                   <field name="partner_id"/>
+                   <field name='policy_company_id'/>
+                   <field name='start_date'/> 
+                   <field name='end_date'/>
+                   <!--<field name='equipment_id'/>-->
+                   <field name='asset_ids' widget="many2many_tags"/>
+                   <field name="company_id" groups="base.group_multi_company" invisible='1'/>
+                   <field name='state'/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_equipment_insurance_kanban_view" model="ir.ui.view">
+            <field name="name">Insurance Kanban View</field>
+            <field name="model">maintenance.equipment.insurance</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by='state'>
+                    <field name="name"/>
+                    <field name='property_line_ids'/>
+                    <field name='user_id'/>
+                    <field name="contact_person"/>
+                    <field name="policy_no"/>
+                    <field name="policy_company_id"/>
+                    <field name="policy_taken"/>
+                    <!--<field name="equipment_id"/>-->
+                    <field name="asset_ids" widget="many2many_tags"/>
+                    <field name="responsible_user_id"/>
+                    <field name="message_needaction_counter"/>
+                    <field name="activity_ids" />
+                    <field name="activity_state" />
+                    <templates>
+                    <t t-name="kanban-tooltip">
+                       <ul class="oe_kanban_tooltip">
+                          <li><b>Poliza No:</b> <field name="policy_no"/></li>
+                          <li><b>Nombre de poliza:</b> <field name="name"/></li>
+                       </ul>
+                    </t>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color)} oe_kanban_card oe_kanban_global_click oe_semantic_html_override">
+                            <div class="o_dropdown_kanban dropdown">
+
+                                <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                    <span class="fa fa-ellipsis-v"/>
+                                </a>
+                                <div class="dropdown-menu" role="menu">
+                                    <t t-if="widget.editable"><a role="menuitem" type="edit" class="dropdown-item">Editar...</a></t>
+                                    <t t-if="widget.deletable"><a role="menuitem" type="delete" class="dropdown-item">Eliminar</a></t>
+                                    <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_content" tooltip="kanban-tooltip">
+                                <div class="o_kanban_record_top">
+                                    <b class="o_kanban_record_title"><field name="name"/></b>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <span name="user_id" t-if="record.user_id">Poliza No: <field name="policy_no"/><br/></span>
+                                    <span name="user_id" t-if="record.user_id">Nombre del titular del seguro: <field name="partner_id"/><br/></span>
+                                    
+                                    <!--<span class="oe_grey" t-if="record.equipment_id"><field name="equipment_id"/><br/></span>-->
+                                    <span class="oe_grey" t-if="record.asset_ids"><field name="asset_ids" widget="many2many_tags"/><br/></span>
+                                    <span class="oe_grey" t-if="record.policy_taken"><field name="policy_taken"/><br/></span>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <div class="o_kanban_inline_block ml4 mr4">
+                                            <field name="activity_ids" widget="kanban_activity" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="oe_clear"></div>
+                        </div>
+                    </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_equipment_insurance_graph_view" model="ir.ui.view">
+        <field name="name">Insurance Graph View</field>
+        <field name="model">maintenance.equipment.insurance</field>
+        <field name="arch" type="xml">
+            <graph string="Insurance">
+                <!--<field name="equipment_id"/>-->
+                <field name="asset_ids"/>
+                <field name="policy_no"/>
+            </graph>
+        </field>
+        </record>
+
+        <record id="view_equipment_insurance_pivot_view" model="ir.ui.view">
+            <field name="name">Insurance Pivot View</field>
+            <field name="model">assets.insurance.line</field>
+            <field name="arch" type="xml">
+                <pivot string="Insurance">
+                    <!--<field name="equipment_id"/>-->
+                    <field name="insurance_ids" type="col"/>
+                    <field name="asset_id" type="row"/>
+                    <field name="prima" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_equipment_insurance_search_view" model="ir.ui.view">
+            <field name="name">Insurance Search View</field>
+            <field name="model">maintenance.equipment.insurance</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name='name'/>
+                    <field name='start_date'/> 
+                    <field name='end_date'/>
+
+                    <group string="Filtros..">
+                       
+                        <filter name="policy_new" icon="terp-gtk-media-pause" string="Borrador" domain="[('state','=','draft')]"/>
+                        <!--<filter name="confirm" icon="terp-gtk-media-pause" string="Confirmado" domain="[('state','=','confirm')]"/>-->
+                        <filter name="policy_in_progress" icon="terp-gtk-media-pause" string="En Progreso" domain="[('state','=','in_progress')]"/>
+                        <filter name="policy_to_expire" icon="terp-gtk-media-pause" string="Caducará pronto" domain="[('state','=','to_expired')]"/>
+                        <filter name="policy_expired" icon="terp-gtk-media-pause" string="Caducado" domain="[('state','=','expired')]"/>
+                    </group>
+
+                    <group  expand='0' string='Agrupar por...'>
+                        
+                        <filter string='Nombre del titular del seguro' name="partner_id" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <!--<filter string='Equipment' name="equipment_id" domain="[]" context="{'group_by': 'equipment_id'}"/>-->
+                        <filter string='Activo' name="asset_ids" domain="[]" context="{'group_by': 'asset_ids'}"/>
+                        <filter string='Compañía' name="company_id" domain="[]" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+
+                        <filter string='Usuario responsable' name="responsible_user_id" domain="[]" context="{'group_by': 'responsible_user_id'}"/>
+
+                        <!--<filter string='Parent' name="parent_id" domain="[]" context="{'group_by': 'parent_id'}"/>-->
+
+
+                        <filter string='Fecha de inicio' name="start_date" domain="[]" context="{'group_by': 'start_date'}"/>
+                        <filter string='Fecha final' name="end_date" domain="[]" context="{'group_by': 'end_date'}"/>
+
+                        <filter string='Estado' name="state" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_equipment_insurance_view">
+            <field name="name">Seguros</field>
+            <field name="res_model">maintenance.equipment.insurance</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">kanban,tree,form,search,graph</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_insurance_novedades_view">
+            <field name="name">Novedades Seguros</field>
+            <field name="res_model">novedad.seguro</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">tree,form,search</field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_insurance_assets_line_view">
+            <field name="name">Informe Seguros</field>
+            <field name="res_model">assets.insurance.line</field>
+            <!-- <field name="view_type">form</field> -->
+            <field name="view_mode">pivot,graph</field>
+        </record>
+
+     <menuitem
+        id="menu_insurance_request_form"
+        name="Seguros"
+        parent="account_accountant.menu_accounting"
+        groups="base.group_user"
+        sequence="3"/>
+
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="menu_insurance_list" name="Seguros"
+                  parent="menu_insurance_request_form"
+                  action="action_equipment_insurance_view" sequence="1"/>
+
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="menu_insurance_novedades"
+                  name="Novedades seguros" parent="menu_insurance_request_form"
+                  action="action_insurance_novedades_view"
+                  sequence="2"/>
+
+        <menuitem id="menu_insurance_assets_line"
+                  name="Informe seguros" parent="menu_insurance_request_form"
+                  action="action_insurance_assets_line_view"
+                  sequence="3"/>
+
+   
+    </data>
+</odoo>
+
+
