@@ -19,7 +19,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'l10n_co_location',  'account_debit_note', 'sale', 'account', 'od_journal_sequence', 'l10n_co_base_nit'],
+    'depends': ['base', 'l10n_co_location',  'account_debit_note', 'sale', 'account', 'od_journal_sequence', 'l10n_co_base_nit', 'l10n_latam_base'],
 
     # always loaded
     'data': [
@@ -38,6 +38,8 @@
         'data/dian_debit_note_concept.xml',
         'data/dian_payment_mean.xml',
         'data/mail_template_electronic.xml',
+        'data/product_product.xml',
+        'data/ir_cron_data.xml',
         'views/views.xml',
         'views/templates.xml',
         'views/mail_invoice.xml',

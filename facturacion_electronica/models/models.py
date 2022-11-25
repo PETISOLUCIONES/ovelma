@@ -42,6 +42,7 @@ class MoveReversal(models.TransientModel):
 
 class ConceptNoteDebit(models.Model):
     _name = 'dian.debitnoteconcept'
+    _description = 'Conceptos nota debito'
 
     name = fields.Char(String='Descripción')
     code = fields.Char(String='Codigo')
@@ -49,6 +50,7 @@ class ConceptNoteDebit(models.Model):
 
 class ConceptNoteCredit(models.Model):
     _name = 'dian.creditnoteconcept'
+    _description = 'Conceptos nota credito'
 
     name = fields.Char(String='Descripción')
     code = fields.Char(String='Codigo')
@@ -56,6 +58,7 @@ class ConceptNoteCredit(models.Model):
 
 class PaymentMethod(models.Model):
     _name = 'dian.paymentmethod'
+    _description = 'Metodos de pago DIAN'
 
     name = fields.Char(String='Nombre')
     code = fields.Char(String='Codigo')
@@ -63,6 +66,7 @@ class PaymentMethod(models.Model):
 
 class FormaPago(models.Model):
     _name = 'dian.paymentmean'
+    _description = 'Formas de pago DIAN'
 
     name = fields.Char(String='Nombre')
     code = fields.Char(String='Codigo')
@@ -110,9 +114,7 @@ class AccountMove(models.Model):
     def _default_payment_mean(self):
         return self.env['dian.paymentmean'].search([('code', '=', '1')], limit=1).id
 
-
     payment_method_id = fields.Many2one("dian.paymentmethod", string='Método de pago', default=_default_payment_method)
-
     payment_mean_id = fields.Many2one('dian.paymentmean', string='Forma de pago', default=_default_payment_mean)
     description_code_credit = fields.Many2one("dian.creditnoteconcept", string='Concepto Nota de Credito')
     description_code_debit = fields.Many2one("dian.debitnoteconcept", string='Concepto Nota de Débito')
@@ -134,21 +136,22 @@ class AccountMove(models.Model):
     )
     comentario = fields.Char(string='Comentario')
     currency_rate = fields.Float(string='Tasa de cambio', digits=0, compute='onchange_currency_invoice')
+    invoice_batch = fields.Boolean('Facturar en batch', help='Si esta opción esta marcada enviará de forma automatica la factura a la DIAN')
+
+    def send_invoice_dian_auto(self):
+        invoices = self.env['account.move'].search([('state', '=', 'posted'),
+                                                    ('move_type', '=', 'out_invoice'),
+                                                    ('invoice_status_dian', '!=', 'Exitoso'),
+                                                    ('invoice_batch', '=', True)])
+        for invoice in invoices:
+            invoice.action_post1()
 
     @api.depends("currency_id", "invoice_date")
     def onchange_currency_invoice(self):
-        date = self.invoice_date
-        rate = self.currency_id.with_context(date=date).rate
-        self.currency_rate = 1 / rate
-
-    '''@api.onchange('invoice_date_due', 'invoice_payment_term_id')
-    def onchange_invoice_date_due(self):
-        for invoice in self:
-            fecha_actual = date.today()
-            if invoice.invoice_date_due > fecha_actual:
-                invoice.payment_mean_id = 2
-            elif invoice.invoice_date_due == fecha_actual:
-                invoice.payment_mean_id = 1'''
+        for move in self:
+            date = move.invoice_date
+            rate = move.currency_id.with_context(date=date).rate
+            move.currency_rate = 1 / rate
 
     def action_invoice_sent(self):
         rslt = super(AccountMove, self).action_invoice_sent()
@@ -163,7 +166,7 @@ class AccountMove(models.Model):
     def action_invoice_print(self):
         if any(not move.is_invoice(include_receipts=True) for move in self):
             raise UserError(_("Only invoices could be printed."))
-        self.filtered(lambda inv: not inv.invoice_sent).write({'invoice_sent': True})
+        self.filtered(lambda inv: not inv.is_move_sent).write({'is_move_sent': True})
         if self.url_pdf and self.invoice_status_dian == "Exitoso":
             return {
                 'type': 'ir.actions.act_url',
@@ -225,7 +228,7 @@ class AccountMove(models.Model):
                      CurrencyCode=move.company_id.currency_id.name,
                      CountryName=move.company_id.country_id.name,
                      CountryCode=move.company_id.country_id.code,
-                     OrderNum=move.ref,
+                     OrderNum=move.invoice_origin,
                      PostalZone=move.company_id.zip,
                      PhoneNum=move.company_id.phone,
                      Email=move.company_id.email,
@@ -235,6 +238,7 @@ class AccountMove(models.Model):
 
     def obtener_totales(self, move):
         total_descuento = 0
+        total_descuento_global = 0
         total_impuestos = 0
         total_retenciones = 0
         total_reteiva = 0
@@ -243,45 +247,51 @@ class AccountMove(models.Model):
         for line in move.invoice_line_ids:
             if line.display_type != 'line_section' and line.display_type != 'line_note':
                 line_price_unit = move.get_price_unit_inv_line(line)
-                line_quantity = move.get_line_quantity(line)
-                total_descuento = total_descuento + ((line.discount / 100) * line_price_unit * line_quantity)
-                if line_price_unit < 0:
-                    total_descuento = total_descuento + (-1 * line_price_unit)
+                producto_desc = self.env.ref('facturacion_electronica.product_product_condition_discount').id
+                if line_price_unit > 0:
+                    line_quantity = move.get_line_quantity(line)
+                    total_descuento = total_descuento + ((line.discount / 100) * line_price_unit * line_quantity)
 
-                price_unit_wo_discount = line_price_unit * (1 - (line.discount / 100.0))
-                line_price_subtotal = line_quantity * price_unit_wo_discount
+                    price_unit_wo_discount = line_price_unit * (1 - (line.discount / 100.0))
+                    line_price_subtotal = line_quantity * price_unit_wo_discount
 
-                subtotal = subtotal + line_price_subtotal
-                for tax in line.tax_ids:
-                    if tax.type_tax.name == 'IVA':
-                        total_impuestos += (tax.amount / 100) * line.price_subtotal
-                    elif tax.type_tax.name == 'ReteFuente':
-                        total_retenciones = total_retenciones + ((tax.amount / 100) * (
-                                (line_price_unit * line.quantity) - (
-                                (line.discount / 100) * line_price_unit * line.quantity)))
-                    elif tax.type_tax.name == 'ReteIVA':
-                        total_reteiva = total_reteiva + ((tax.amount / 100) * (
-                                (line_price_unit * line.quantity) - (
-                                (line.discount / 100) * line_price_unit * line.quantity)))
-                    elif tax.type_tax.name == 'ReteICA':
-                        total_reteica = total_reteica + ((tax.amount / 100) * (
-                                (line_price_unit * line.quantity) - (
-                                (line.discount / 100) * line_price_unit * line.quantity)))
-        total = subtotal + total_impuestos
+                    subtotal = subtotal + line_price_subtotal
+                    for tax in line.tax_ids:
+                        if tax.type_tax.name == 'IVA':
+                            total_impuestos += (tax.amount / 100) * line.price_subtotal
+                        elif tax.type_tax.name == 'ReteFuente':
+                            total_retenciones = total_retenciones + ((tax.amount / 100) * (
+                                    (line_price_unit * line_quantity) - (
+                                    (line.discount / 100) * line_price_unit * line_quantity)))
+                        elif tax.type_tax.name == 'ReteIVA':
+                            total_reteiva = total_reteiva + ((tax.amount / 100) * (
+                                    (line_price_unit * line_quantity) - (
+                                    (line.discount / 100) * line_price_unit * line_quantity)))
+                        elif tax.type_tax.name == 'ReteICA':
+                            total_reteica = total_reteica + ((tax.amount / 100) * (
+                                    (line_price_unit * line_quantity) - (
+                                    (line.discount / 100) * line_price_unit * line_quantity)))
+                elif line_price_unit < 0 and line.product_id.id == producto_desc:
+                    total_descuento_global = total_descuento_global + (-1 * line_price_unit)
+
+        total = subtotal + total_impuestos - total_descuento_global
+        if total_descuento_global > 0 and total_descuento > 0:
+            raise UserError("Solo puedes aplicar descuentos por linea o por el total de la factura")
         return {'total': total,
                 'subtotal': subtotal,
                 'total_impuestos': total_impuestos,
                 'total_retenciones': total_retenciones,
                 'total_reteiva': total_reteiva,
                 'total_reteica': total_reteica,
-                'total_descuento': total_descuento}
+                'total_descuento': total_descuento,
+                'total_descuento_global': total_descuento_global}
 
     def obtener_resolucion_encabezado(self, move, invoice_type):
         if invoice_type == '91':
             return {'InvoiceRef': move.reversed_entry_id.name,
                     'InvoiceTypeRef': move.GetInvoiceType(move.reversed_entry_id),
-                    'InvoiceDateRef': move.reversed_entry_id.invoice_date.strftime('%d/%m/%Y %H:%M:%S'),
-                    'DueDateRef': move.reversed_entry_id.invoice_date_due.strftime('%d/%m/%Y %H:%M:%S'),
+                    'InvoiceDateRef': move.reversed_entry_id.invoice_date.strftime('%d/%m/%Y %H:%M:%S') if move.reversed_entry_id.name else "0",
+                    'DueDateRef': move.reversed_entry_id.invoice_date_due.strftime('%d/%m/%Y %H:%M:%S') if move.reversed_entry_id.name else "0",
                     'CMReasonCode_c': move.description_code_credit.code,
                     'CMReasonDesc_c': move.description_code_credit.name,
                     'DMReasonCode_c': '0',
@@ -378,7 +388,8 @@ class AccountMove(models.Model):
 
         # Get current time
         now = datetime.now(local_tz)
-
+        # Delivery info
+        direccion = move.partner_shipping_id
         datos = dict(Company=nit_company,
                      InvoiceType=invoicetype,
                      InvoiceNum=move.name,
@@ -392,23 +403,24 @@ class AccountMove(models.Model):
                      DMReasonCode_c=resolucion['DMReasonCode_c'],
                      DMReasonDesc_c=resolucion['DMReasonDesc_c'],
                      CustNum=CustNum,
-                     ContactName=' ',
-                     ContactCountry=' ',
-                     ContactCity=' ',
-                     ContactAddress=' ',
+                     ContactName=direccion.name if direccion else move.partner_id.name,
+                     ContactCountry=direccion.country_id.name if direccion else move.partner_id.country_id.name,
+                     ContactState=direccion.state_id.name if direccion else move.partner_id.state_id.name,
+                     ContactCity=direccion.city_id.name if direccion else move.partner_id.city_id.name,
+                     ContactAddress=direccion.street if direccion else move.partner_id.street,
                      CustomerName=move.partner_id.name,
                      InvoiceDate=now.strftime('%d/%m/%Y %H:%M:%S'),
                      DueDate=move.invoice_date_due.strftime('%d/%m/%Y')+ " " + now.strftime('%H:%M:%S'), #now.strftime('%d/%m/%Y %H:%M:%S'),
                      DocWHTaxAmt=str(round(abs(totales['total_retenciones']), 2)),
                      TaxAmtLineReteiva=str(round(abs(totales['total_reteiva']), 2)),
                      TaxAmtLineReteica=str(round(abs(totales['total_reteica']), 2)),
-                     InvoiceComment=comment,
+                     InvoiceComment=comment if comment else ' ',
                      InvoiceComment1=str(move.currency_rate),
                      InvoiceComment2=move.invoice_user_id.name,
                      InvoiceComment3=str(move.comentario) if move.comentario else "",
                      InvoiceComment4=resolucion['CMReasonDesc_c'] if invoicetype == '91' else resolucion['DMReasonDesc_c'] if invoicetype == '92' else "",
-                     CurrencyCode=move.partner_id.partner_currency_id.name,
-                     CurrencyCodeCurrencyID=move.partner_id.partner_currency_id.name,
+                     CurrencyCode=move.currency_id.name,
+                     CurrencyCodeCurrencyID=move.currency_id.name,
                      ContingencyInvoice='0',
                      NetWeight='0',
                      PorcAdministracion='0',
@@ -437,11 +449,12 @@ class AccountMove(models.Model):
                      PaymentDueDate=move.invoice_date_due.strftime('%Y-%m-%d'),
                      CalculationRate_c=resolucion['CalculationRate_c'],
                      DateCalculationRate_c=resolucion['DateCalculationRate_c'],
-                     ConditionPay='0',
+                     ConditionPay=move.invoice_payment_term_id.name if move.invoice_payment_term_id else ' ',
                      DspDocSubTotal=str(round(float_round(totales['subtotal'], precision_digits=2), 2)),
                      DocTaxAmt=str(round(float_round(totales['total_impuestos'], precision_digits=2),2)),
                      DspDocInvoiceAmt=str(round(float_round(totales['total'], precision_digits=2), 2)),
-                     Discount=str(round(float_round(totales['total_descuento'], precision_digits=2), 2)))
+                     Discount=str(round(float_round(totales['total_descuento'], precision_digits=2), 2)),
+                     GlobalDiscount=str(round(float_round(totales['total_descuento_global'], precision_digits=2), 2)))
         return datos
 
     def get_price_unit_inv_line(self, line):
@@ -459,13 +472,14 @@ class AccountMove(models.Model):
         impuestosFactura = []
         InvoiceNum = move.name
         nit_company = move.GetNitCompany(move.company_id.vat)
-        CurrencyCode = move.partner_id.partner_currency_id.name
+        CurrencyCode = move.currency_id.name
         i = 1
         for line in move.invoice_line_ids:
             if line.display_type != 'line_section' and line.display_type != 'line_note':
                 line_price_unit = move.get_price_unit_inv_line(line)
+                line_quantity = move.get_line_quantity(line)
                 price_unit_wo_discount = line_price_unit * (1 - (line.discount / 100.0))
-                line_price_subtotal = round(line_price_unit, 2) * line.quantity
+                line_price_subtotal = (round(line_price_unit, 2) * line_quantity * (1-(line.discount/100)))
                 if line_price_subtotal > 0 and line.name not in producto_regalo:
                     if len(line.tax_ids) == 0:
                         dato = dict(Company=nit_company,
@@ -494,7 +508,7 @@ class AccountMove(models.Model):
                                         DocTaxAmt=str(abs(round(
                                             float_round(line_price_subtotal * tax.amount / 100, precision_digits=2),
                                             2))),
-                                        Percent=(str("{0:.3f}".format(abs(tax.amount)))),
+                                        Percent=(str("{0:.2f}".format(abs(tax.amount)))),
                                         WithholdingTax_c=str(tax.type_tax.retention))
                             datos.append(dato)
                 i = i + 1
@@ -504,11 +518,13 @@ class AccountMove(models.Model):
         datos = []
         InvoiceNum = move.name
         nit_company = move.GetNitCompany(move.company_id.vat)
+        totales = self.obtener_totales(move)
         i = 1
         for line in move.invoice_line_ids:
             if line.display_type != 'line_section' and line.display_type != 'line_note':
                 line_price_unit = move.get_price_unit_inv_line(line)
                 line_quantity = move.get_line_quantity(line)
+                producto_desc = self.env.ref('facturacion_electronica.product_product_condition_discount').id
                 if line_price_unit > 0:
                     dato = dict(Company=nit_company,
                                 InvoiceNum=InvoiceNum,
@@ -520,7 +536,18 @@ class AccountMove(models.Model):
                                 MiscCodeDescription='Descuento',
                                 PercentAmt=str(line.discount),
                                 MiscType='1', )
-
+                elif line_price_unit < 0 and line.product_id.id == producto_desc:
+                    percent_discount = round(abs(line_price_unit) * 100 / totales['subtotal'], 2)
+                    dato = dict(Company=nit_company,
+                                InvoiceNum=InvoiceNum,
+                                InvoiceLine="0",
+                                MiscCode='01',
+                                Description='Descuento Condicionado',
+                                MiscAmt=str(abs(line_price_unit)),
+                                DocMiscAmt='0',
+                                MiscCodeDescription='Descuento Condicionado',
+                                PercentAmt=str(percent_discount),
+                                MiscType='1', )
                 else:
                     pos = 0
                     totalLinea = 0
@@ -575,6 +602,26 @@ class AccountMove(models.Model):
                      ),
             )
 
+        if 'ReteICA' in impuestosFactura:
+            datos.append(
+                dict(Company=nit_company,
+                     RateCode='ReteICA',
+                     TaxCode='ReteICA',
+                     Description='Retención sobre el ICA',
+                     IdImpDIAN_c='07',
+                     ),
+            )
+
+        if 'ReteIVA' in impuestosFactura:
+            datos.append(
+                dict(Company=nit_company,
+                     RateCode='ReteIVA',
+                     TaxCode='ReteIVA',
+                     Description='Retención sobre el IVA',
+                     IdImpDIAN_c='05',
+                     ),
+            )
+
         if 'AIU' in impuestosFactura:
             datos.append(
                 dict(Company=nit_company,
@@ -599,7 +646,7 @@ class AccountMove(models.Model):
                      Address1=move.partner_id.street,
                      EMailAddress=move.partner_id.email,
                      PhoneNum=move.partner_id.phone,
-                     CurrencyCode=move.partner_id.partner_currency_id.name,
+                     CurrencyCode=move.currency_id.name,
                      Country=move.partner_id.country_id.name,
                      CountryCode=move.partner_id.country_id.code,
                      PostalZone=move.partner_id.zip,
@@ -628,17 +675,19 @@ class AccountMove(models.Model):
         datos = []
         producto_regalo = []
         InvoiceNum = move.name
-        CurrencyCode = move.partner_id.partner_currency_id.name
+        CurrencyCode = move.currency_id.name
         i = 1
         for line in move.invoice_line_ids:
             if line.display_type != 'line_section' and line.display_type != 'line_note':
                 line_price_unit = move.get_price_unit_inv_line(line)
                 line_quantity = move.get_line_quantity(line)
-                if line_price_unit > 0:
+                producto_desc = self.env.ref('facturacion_electronica.product_product_condition_discount').id
+                if line_price_unit > 0 and line.product_id.id != producto_desc:
                     dato = dict(InvoiceNum=InvoiceNum,
                                 InvoiceLine=str(i),
                                 PartNum=line.product_id.default_code,
                                 LineDesc=line.name,
+                                Product=line.product_id.name,
                                 PartNumPartDescription=line.name,
                                 SellingShipQty=str(line_quantity),
                                 SalesUM=line.product_uom_id.name,
@@ -654,31 +703,49 @@ class AccountMove(models.Model):
                                     round(line_price_unit * line_quantity * (line.discount / 100), 2)),
                                 DspDocTotalMiscChrg='0',
                                 CurrencyCode=CurrencyCode,
-                                LineComment=line.product_id.categ_id.name)
+                                LineComment=line.product_id.categ_id.name,
+                                LineComment1='',
+                                LineComment2='',)
                     datos.append(dato)
                     i = i + 1
                 else:
-                    try:
-                        producto_regalo.append(line.name.split("-")[1].lstrip())
-                    except:
-                        producto_regalo.append(line.name.split(":")[1].lstrip())
+                    producto_regalo.append(line.name)
+
         return {'datos': datos, 'producto_regalo': producto_regalo}
 
-    def action_post1(self):
-        file = 'plantilla.xml'
-        if self.env.company.ruta_plantilla:
-            ruta_plantilla = self.env.company.ruta_plantilla + '/' + file
+    def get_nombreplantilla(self, move):
+        tipo = move.GetInvoiceType(move)
+        if tipo in ['01', '02', '91', '92']:
+            return 'plantilla.xml'
+
+    def get_url_ws(self, invoicetype, move):
+        ip_ws = str(move.company_id.ip_webservice)
+        url = ''
+        if invoicetype == '01':
+            url = 'http://' + ip_ws + '/api/EnvioFactura'
+        elif invoicetype == '02':
+            url = 'http://' + ip_ws + '/api/EnvioFacturaExportacion'
+        elif invoicetype == '91':
+            url = 'http://' + ip_ws + '/api/EnvioNotaCredito'
         else:
-            ruta_plantilla = file
-        full_file = os.path.abspath(os.path.join('', ruta_plantilla))
-        try:
-            doc_xml = ET.parse(full_file)
-        except:
-            raise UserError("No se encontró la plantilla en la ruta " + full_file)
+            url = 'http://' + ip_ws + '/api/EnvioNotaDebito'
+        return url
 
-        root = doc_xml.getroot()
-
+    def action_post1(self):
         for move in self:
+            file = move.get_nombreplantilla(move)
+            if move.env.company.ruta_plantilla:
+                ruta_plantilla = move.env.company.ruta_plantilla + '/' + file
+            else:
+                ruta_plantilla = file
+            full_file = os.path.abspath(os.path.join('', ruta_plantilla))
+            try:
+                doc_xml = ET.parse(full_file)
+            except:
+                raise UserError("No se encontró la plantilla en la ruta " + full_file)
+
+            root = doc_xml.getroot()
+
             '''DATOS EMPRESA'''
             empresa = move.create_dict_company_dian(move)
             move.EditaCompany(empresa, root)
@@ -740,20 +807,20 @@ class AccountMove(models.Model):
                 os.makedirs(ruta_xml)
                 os.makedirs(directoriozip)
 
-            new_file = ruta_xml + move.name + '.xml'
+            new_file = ruta_xml + move.name.replace('/', '_') + '.xml'
 
             doc_xml.write(new_file)
 
             ip_ws = str(move.company_id.ip_webservice)
-            url = ''
-            if invoicetype == '01':
+            url = move.get_url_ws(invoicetype, move)
+            """if invoicetype == '01':
                 url = 'http://' + ip_ws + '/api/EnvioFactura'
             elif invoicetype == '02':
                 url = 'http://' + ip_ws + '/api/EnvioFacturaExportacion'
             elif invoicetype == '91':
                 url = 'http://' + ip_ws + '/api/EnvioNotaCredito'
             else:
-                url = 'http://' + ip_ws + '/api/EnvioNotaDebito'
+                url = 'http://' + ip_ws + '/api/EnvioNotaDebito'"""
 
             headers = {'content-type': 'text/xml;charset=utf-8'}
 
@@ -824,7 +891,7 @@ class AccountMove(models.Model):
                 else:
                     if respuestaws == 'Factura ya aprobada':
                         url_xml = 'http://' + ip_ws + '/AttachedDocuments/' + str(
-                            nit_company) + '/' + attach
+                            nit_company) + '/' + attach + '.xml'
                         url_pdf = 'http://' + ip_ws + '/facturaPDF/' + str(
                             nit_company) + '/' + move.name + '.pdf'
 
@@ -915,6 +982,7 @@ class AccountMove(models.Model):
                     InvoiceLine = ET.SubElement(InvcDtl, 'InvoiceLine')
                     PartNum = ET.SubElement(InvcDtl, 'PartNum')
                     LineDesc = ET.SubElement(InvcDtl, 'LineDesc')
+                    Product = ET.SubElement(InvcDtl, 'Product')
                     PartNumPartDescription = ET.SubElement(InvcDtl, 'PartNumPartDescription')
                     SellingShipQty = ET.SubElement(InvcDtl, 'SellingShipQty')
                     SalesUM = ET.SubElement(InvcDtl, 'SalesUM')
@@ -929,6 +997,8 @@ class AccountMove(models.Model):
                     DspDocTotalMiscChrg = ET.SubElement(InvcDtl, 'DspDocTotalMiscChrg')
                     CurrencyCode = ET.SubElement(InvcDtl, 'CurrencyCode')
                     LineComment = ET.SubElement(InvcDtl, 'LineComment')
+                    LineComment1 = ET.SubElement(InvcDtl, 'LineComment1')
+                    LineComment2 = ET.SubElement(InvcDtl, 'LineComment2')
                     i += 1
 
             detalles = root.findall('./InvcDtls/')
@@ -1062,7 +1132,7 @@ class AccountMove(models.Model):
             elif dato.move_type != 'out_refund' and dato.debit_note == True:
                 # invoicetype = '92'
                 invoicetype = dato.journal_id.sequence_id.resolution_id.document_type
-            elif dato.move_type != 'out_refund' and dato.debit_note == False:
+            elif dato.move_type == 'out_invoice' and dato.debit_note == False:
                 # invoicetype = dato.document_type
                 invoicetype = dato.journal_id.sequence_id.resolution_id.document_type
             return invoicetype
@@ -1084,11 +1154,9 @@ class AccountMove(models.Model):
                 document = number[0:number.find('-')]
             else:
                 document = number
-            return document
+            return document.replace('.', '')
         except:
-            return document
-
-
+            return document.replace('.', '')
 
     def TypeDocumentCust(self, typedocument):
         type = ''
@@ -1241,6 +1309,7 @@ class ResCountry(models.Model):
 
 class FiscalRegimen(models.Model):
     _name = 'dian.fiscalregimen'
+    _description = 'Regimen fiscal DIAN'
 
     name = fields.Char(String='Nombre')
     code = fields.Char(String='Codigo')
@@ -1254,6 +1323,7 @@ class AccountTax(models.Model):
 
 class TypeTax(models.Model):
     _name = 'dian.typetax'
+    _description = 'Tipo de impuesto DIAN'
 
     name = fields.Char(string='Nombre')
     code = fields.Char(string='Codigo')
@@ -1279,7 +1349,7 @@ class CompanyType(models.Model):
 
 class DocumentType(models.Model):
     _name = 'dian.documenttype'
-    _description = 'tipo de compañia'
+    _description = 'tipo de documento'
 
     code = fields.Char(string='Codido', required=True)
     name = fields.Char(string='Nombre', required=True)
@@ -1334,7 +1404,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     # @api.model
-    def _create_invoices(self, grouped=False, final=False):
+    '''def _create_invoices(self, grouped=False, final=False):
         res = super(SaleOrder, self)._create_invoices(grouped, final)
         send_dian = self._context.get('send_dian', False)
         if send_dian == True:
@@ -1343,17 +1413,12 @@ class SaleOrder(models.Model):
                     move.action_post()
                     if move.state == 'posted':
                         move.action_post1()
-        return res
+        return res'''
 
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
-        #payment_term = self.env['account.payment.term'].search([('name', '=', 'Pago inmediato')], limit=1)
-        #if payment_term.name == 'Pago inmediato':
-        #res['payment_mean_id'] = 1
-        #else:
         tipo = None
         if self.payment_term_id:
-
             if len(self.payment_term_id.line_ids.ids) == 1:
                 line = self.payment_term_id.line_ids[0]
                 if line.value_amount == 0 and line.days == 0 and line.value == 'balance':
@@ -1372,5 +1437,3 @@ class SaleOrder(models.Model):
     _inherit = 'account.payment.term'
 
     payment_mean_id = fields.Many2one('dian.paymentmean', string='Tipo de pago')'''
-
-

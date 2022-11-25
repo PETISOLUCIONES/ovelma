@@ -289,6 +289,9 @@
                         </group>
                     </page>
                 </page>
+                <field name="to_check" position="after">
+                    <field name="invoice_batch"/>
+                </field>
                 <!--<xpath expr="//field[@name='company_id']" position="after">
                     <field name="currency_rate" attrs="{'invisible':[('type', 'not in', ['out_invoice', 'out_refund'])]}" readonly="True"/>
                 </xpath>-->
