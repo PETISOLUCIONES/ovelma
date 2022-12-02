@@ -16,6 +16,7 @@
     <CustNum></CustNum>
     <ContactName></ContactName>
     <ContactCountry></ContactCountry>
+    <ContactState></ContactState>
     <ContactCity></ContactCity>
     <ContactAddress></ContactAddress>
     <CustomerName></CustomerName>
@@ -61,6 +62,7 @@
     <DocTaxAmt></DocTaxAmt>
     <DspDocInvoiceAmt></DspDocInvoiceAmt>
     <Discount></Discount>
+    <GlobalDiscount></GlobalDiscount>
     <TypeofTrasport></TypeofTrasport>
     <PortoofShipment></PortoofShipment>
     <PortofEntry></PortofEntry>
@@ -77,6 +79,7 @@
       <InvoiceLine></InvoiceLine>
       <PartNum></PartNum>
       <LineDesc></LineDesc>
+      <Product></Product>
       <PartNumPartDescription></PartNumPartDescription>
       <SellingShipQty></SellingShipQty>
       <SalesUM></SalesUM>
