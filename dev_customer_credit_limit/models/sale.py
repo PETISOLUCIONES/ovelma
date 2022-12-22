@@ -131,14 +131,16 @@ class sale_order(models.Model):
                     'credit_limit_on_hold': partner_id.credit_limit_on_hold,
                 }
                 wiz_id = self.env['customer.limit.wizard'].create(vals_wiz)
-                action = imd.xmlid_to_object('dev_customer_credit_limit.action_customer_limit_wizard')
-                form_view_id = imd.xmlid_to_res_id('dev_customer_credit_limit.view_customer_limit_wizard_form')
+                #action = imd.xmlid_to_object('dev_customer_credit_limit.action_customer_limit_wizard')
+                #form_view_id = imd.xmlid_to_res_id('dev_customer_credit_limit.view_customer_limit_wizard_form')
+                action = self.env.ref('dev_customer_credit_limit.action_customer_limit_wizard')
+                form_view_id = self.env.ref('dev_customer_credit_limit.view_customer_limit_wizard_form')
                 return {
                     'name': action.name,
                     'help': action.help,
                     'type': action.type,
-                    'views': [(form_view_id, 'form')],
-                    'view_id': form_view_id,
+                    'views': [(form_view_id.id, 'form')],
+                    'view_id': form_view_id.id,
                     'target': action.target,
                     'context': action.context,
                     'res_model': action.res_model,
@@ -252,7 +254,8 @@ class sale_order(models.Model):
         return base_url
 
     def send_mail_approve_credit_limit(self):
-        manager_group_id = self.env['ir.model.data'].get_object_reference('dev_customer_credit_limit', 'credit_limit_config')[1]
+        #manager_group_id = self.env['ir.model.data'].get_object_reference('dev_customer_credit_limit', 'credit_limit_config')[1]
+        manager_group_id = self.env.ref('dev_customer_credit_limit.credit_limit_config').id
         browse_group = self.env['res.groups'].browse(manager_group_id)
         partner_id = self.partner_id
         if self.partner_id.parent_id:
