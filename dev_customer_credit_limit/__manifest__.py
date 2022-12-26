@@ -99,6 +99,7 @@ Odoo Credit sale Order
     'depends': ['sale_management', 'account'],
     'data': [
         'security/security.xml',
+        'security/ir.model.access.csv',
         'wizard/customer_limit_wizard_view.xml',
         'views/partner_view.xml',
         'views/sale_order_view.xml',

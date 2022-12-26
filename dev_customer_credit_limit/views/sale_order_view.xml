@@ -24,7 +24,7 @@ For Module Support : devintelle@gmail.com  or Skype : devintelle
                 </xpath>
                 
                 <xpath expr="//button[@name='action_sale_ok']" position="after">
-                     <button name="print_quotation" string="Imprimir" type="object" states="credit_limit"/>
+                     <!--<button name="print_quotation" string="Imprimir" type="object" states="credit_limit"/>-->
                      <button name="action_confirm" states="credit_limit" string="Confirmar venta" class="btn-primary" type="object" context="{'show_sale': True}" groups="sales_team.group_sale_manager"/>
                      <button name="action_cancel" states="credit_limit" type="object" string="Cancelar"/>
                 </xpath>
