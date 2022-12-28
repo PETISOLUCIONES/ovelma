@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_all_users_import,access.all.users.import,import_fac_electronica.model_import_xml,,1,1,1,1
