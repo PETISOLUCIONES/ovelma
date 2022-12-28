@@ -26,9 +26,11 @@ class AccountMove(models.Model):
         return res
 
     def write(self, vals):
-        if not vals.get('city_id'):
-            vals['city_id'] = self.env['res.partner'].search([('id', '=', self.partner_id.id if not vals.get(
-                'partner_id') else vals['partner_id'])]).city_id.id
+        for rec in self:
+            if rec.move_type in ["out_invoice", "out_refund", "in_invoice", "in_refund"]:
+                if not vals.get('city_id'):
+                    vals['city_id'] = rec.env['res.partner'].search([('id', '=', rec.partner_id.id if not vals.get(
+                        'partner_id') else vals['partner_id'])]).city_id.id
         res = super(AccountMove, self).write(vals)
         return res
 
@@ -45,8 +47,8 @@ class AccountMoveLine(models.Model):
             line.city_id = line.move_id.city_id if not line.city_id else line.city_id
             if line.partner_id.is_ica:
                 new_taxes = []
-                product_taxes = line.product_id.taxes_id if line.move_id.move_type in ['out_invoice', 'out_refund'] else line.product_id.supplier_taxes_id
-                taxes = line.product_id.taxes_id.ids if line.move_id.move_type in ['out_invoice', 'out_refund'] else line.product_id.supplier_taxes_id.ids
+                product_taxes = line.product_id.taxes_id if line.move_id.move_type in ['out_invoice', 'out_refund', 'out_receipt'] else line.product_id.supplier_taxes_id
+                taxes = line.product_id.taxes_id.ids if line.move_id.move_type in ['out_invoice', 'out_refund', 'out_receipt'] else line.product_id.supplier_taxes_id.ids
                 for tax in product_taxes:
                     if tax.is_ica and tax.city_id != line.city_id:
                         new_taxes.append(tax.id)
@@ -56,8 +58,8 @@ class AccountMoveLine(models.Model):
                 line.tax_ids = taxes
             else:
                 new_taxes = []
-                product_taxes = line.product_id.taxes_id if line.move_id.move_type in ['out_invoice', 'out_refund'] else line.product_id.supplier_taxes_id
-                taxes = line.product_id.taxes_id.ids if line.move_id.move_type in ['out_invoice', 'out_refund'] else line.product_id.supplier_taxes_id.ids
+                product_taxes = line.product_id.taxes_id if line.move_id.move_type in ['out_invoice', 'out_refund', 'out_receipt'] else line.product_id.supplier_taxes_id
+                taxes = line.product_id.taxes_id.ids if line.move_id.move_type in ['out_invoice', 'out_refund', 'out_receipt'] else line.product_id.supplier_taxes_id.ids
                 for tax in product_taxes:
                     if tax.is_ica:
                         new_taxes.append(tax.id)

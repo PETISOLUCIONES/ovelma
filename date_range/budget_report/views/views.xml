@@ -1,5 +1,0 @@
-<odoo>
-    <data noupdate="1">
-        <function model="budget.report" name="initialize_report"/>
-    </data>
-</odoo>
