@@ -19,9 +19,10 @@ class PurchaseOrderLine(models.Model):
     city_id = fields.Many2one('res.city', string='Ciudad', related='order_id.company_id.partner_id.city_id')
 
     @api.onchange('product_id')
-    def onchange_product_id(self):
+    def onchange_product_id_ica(self):
         for line in self:
             if line.partner_id.is_ica:
+                line.city_id = self.env.company.partner_id.city_id
                 new_taxes = []
                 product_taxes = line.product_id.supplier_taxes_id
                 taxes = line.product_id.supplier_taxes_id.ids
