@@ -11,4 +11,4 @@ class AccountMove(models.Model):
 
     def _compute_payment_ids(self):
         for record in self:
-            record.payments = self.env['account.payment'].search([('invoice_ids', 'in', record.id)]).sorted(key=lambda r: r.id)
+            record.payments = self.env['account.payment'].search([('reconciled_bill_ids', 'in', record.id)]).sorted(key=lambda r: r.id)

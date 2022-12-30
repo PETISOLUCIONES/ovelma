@@ -8,8 +8,8 @@
 
                     <t t-set="reason" t-value="" />
                     <tr t-foreach="o.payments" t-as="payment">
-                        <t t-if="payment.payment_difference_handling == 'reconcile' and payment.move_line_ids">
-                            <t t-set="reason" t-value="payment.move_line_ids[-1].name" />
+                        <t t-if="payment.is_reconciled and payment.line_ids">
+                            <t t-set="reason" t-value="payment.line_ids[-1].name" />
                         </t>
                     </tr>
                     <p t-if="reason">
