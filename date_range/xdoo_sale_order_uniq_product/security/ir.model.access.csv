@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_xdoo_sale_order_uniq_product_xdoo_sale_order_uniq_product,xdoo_sale_order_uniq_product.xdoo_sale_order_uniq_product,model_xdoo_sale_order_uniq_product_xdoo_sale_order_uniq_product,,1,0,0,0
